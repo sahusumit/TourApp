@@ -7,6 +7,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -14,6 +15,7 @@ const globalErrorHandler = require('./controllers/errorController');
 const tourRoutes = require('./routes/tourRoutes');
 const userRoutes = require('./routes/userRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
 const viewRoutes = require('./routes/viewRoutes');
 const app = express();
 
@@ -41,7 +43,9 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // Body Parser, Reading data from the body  into req.body
-app.use(express.json({limit:'10kb'}));
+app.use(express.json({limit:'10kb'})); 
+app.use(express.urlencoded({extended: true, limit: '10kb'}));
+app.use(cookieParser());
 
 // data sanitization against NoSQL  query injection
 app.use(mongoSanitize());
@@ -60,7 +64,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //Test middleware
 app.use((req, res, next)=>{
-    console.log("hello from middleware");
+    // console.log(req.cookies);
     next();
 });
 
@@ -114,10 +118,12 @@ app.use((req, res, next)=>{
 
 //routes fro view for frontend
 app.use('/', viewRoutes);
+
 //3) Routes
 app.use('/api/v1/tours', tourRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
 
 
 
