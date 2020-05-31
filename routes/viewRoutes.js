@@ -4,7 +4,9 @@ const authController = require('../controllers/authController');
 const bookingController = require('../controllers/bookingController');
 const routes = express.Router();
 
-  
+
+routes.use(viewsController.alerts);
+
 routes.get('/', authController.isLoggedIn, viewsController.getOverview);
 routes.get('/tour/:slug', authController.isLoggedIn,  viewsController.getTour);
 routes.get('/login', authController.isLoggedIn, viewsController.getLoginForm);
