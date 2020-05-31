@@ -10,15 +10,16 @@ const signedToken = id=>{
     return  jwt.sign({id}, process.env.JWT_SECRET,{expiresIn:process.env.JWT_EXPIRES_IN});
 }
 
-const createSendToken = (user, statusCode , res) => {
+const createSendToken = (user, statusCode , req, res) => {
     const token = signedToken(user._id);
     const cookieOption = {
         expires: new Date(
             Date.now() + process.env.JWT_COOKIE_EXPIRES_IN*24*60*60*1000
         ),
-        httpOnly: true
+        httpOnly: true,
+        secure: req.secure || req.headers('x-forwarded-proto')==='https'
     };
-    if(process.env.NODE_ENV === 'production') cookieOption.secure = true;
+  //  if(req.secure || req.headers('x-forwarded-proto')==='https') cookieOption.secure = true;
 
     res.cookie('jwt', token, cookieOption);
     //remove password from the output
@@ -38,7 +39,7 @@ exports.signup = catchAsync(async (req, res, next)=>{
  // console.log(url);
   await new Email(newUser, url).sendWelcome();
 //   const token = jwt.sign({id:newUser._id}, process.env.JWT_SECRET,{expiresIn:process.env.JWT_EXPIRES_IN});
-createSendToken(newUser, 201, res);
+createSendToken(newUser, 201, req, res);
 });
 
 
@@ -63,7 +64,7 @@ exports.login = catchAsync(async (req, res, next)=>{
             return next(new AppError("Incorrect  Email or Password", 401));
         }
 //  4. if everythings ok the send token to client.
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 exports.protect = catchAsync(async(req, res, next)=>{
@@ -212,7 +213,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
     // 4) Log the user in. send JWT
 
-    createSendToken(user, 200, res);
+    createSendToken(user, 200, req, res);
 });
 
 exports.updatePassword = catchAsync(async(req, res, next) => {
@@ -229,5 +230,5 @@ exports.updatePassword = catchAsync(async(req, res, next) => {
     user.passwordConfirm = req.body.passwordConfirm;
     await user.save();
     // 4 log user in, Send JWT 
-    createSendToken(user, 200, res);
+    createSendToken(user, 200, req, res);
 });
