@@ -9,7 +9,7 @@ $ npm install
 # To run in the development
 $ npm run dev
 
-\nIn the run on the port 4001:
+In the run on the port 4001:
 and open http://localhost:4001 any browser
 
 
